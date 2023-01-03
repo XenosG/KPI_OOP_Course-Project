@@ -199,11 +199,10 @@ public class GameAccount
 // Inherits from Game class
 class TicTacToe : Game
 {
-    // This class represents user's cursor (its position)
-    private class Cursor
+    // This struct represents user's cursor (its position)
+    private struct Cursor
     {
-        private int yCord = 0;
-        private int xCord = 0;
+        private int yCord, xCord;
 
         // Getters and setters for cursor coordinates
         // Setters ensure that cursor doesnt go out of bounds
@@ -217,6 +216,13 @@ class TicTacToe : Game
         {
             get => xCord;
             set => xCord = (value <= 2 && value >= 0) ? value : xCord;
+        }
+
+        // Constructor is necessary for structs
+        public Cursor()
+        {
+            yCord = 0;
+            xCord = 0;
         }
     }
 
@@ -237,7 +243,7 @@ class TicTacToe : Game
     }
 
     // Fields required for a tic-tac-toe game
-    private Cursor cursor;
+    private Cursor cursor = new Cursor();
     private PlayerTurn currentPlayerTurn;
     private bool isWon;
     private bool isDraw;
@@ -463,7 +469,7 @@ class Program
             Console.WriteLine("1. Play Tic Tac Toe");
             Console.WriteLine("2. View Game History");
             Console.WriteLine("3. View Player's ratings");
-            Console.WriteLine("3. Quit");
+            Console.WriteLine("4. Quit");
 
             // Get user input
             Console.Write("Enter an option: ");

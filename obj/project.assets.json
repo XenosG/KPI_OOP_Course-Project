@@ -60,11 +60,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\Xenos\\Desktop\\TicTacToe\\TicTacToe.csproj",
+      "projectUniqueName": "C:\\KPI\\3 SEM\\OOP\\TicTacToe\\TicTacToe.csproj",
       "projectName": "TicTacToe",
-      "projectPath": "c:\\Users\\Xenos\\Desktop\\TicTacToe\\TicTacToe.csproj",
+      "projectPath": "C:\\KPI\\3 SEM\\OOP\\TicTacToe\\TicTacToe.csproj",
       "packagesPath": "C:\\Users\\Xenos\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\Xenos\\Desktop\\TicTacToe\\obj\\",
+      "outputPath": "C:\\KPI\\3 SEM\\OOP\\TicTacToe\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Xenos\\AppData\\Roaming\\NuGet\\NuGet.Config"

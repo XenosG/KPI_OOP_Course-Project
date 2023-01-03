@@ -15,3 +15,20 @@ C:\Users\Xenos\Desktop\TicTacToe\obj\Debug\net6.0\TicTacToe.genruntimeconfig.cac
 C:\Users\Xenos\Desktop\TicTacToe\obj\Debug\net6.0\ref\TicTacToe.dll
 C:\Users\Xenos\Desktop\TicTacToe\bin\Debug\net6.0\Newtonsoft.Json.dll
 C:\Users\Xenos\Desktop\TicTacToe\obj\Debug\net6.0\TicTacToe.csproj.CopyComplete
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.csproj.AssemblyReference.cache
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.GeneratedMSBuildEditorConfig.editorconfig
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.AssemblyInfoInputs.cache
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.AssemblyInfo.cs
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.csproj.CoreCompileInputs.cache
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.dll
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\refint\TicTacToe.dll
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.pdb
+C:\KPI\3 SEM\OOP\TicTacToe\bin\Debug\net6.0\TicTacToe.exe
+C:\KPI\3 SEM\OOP\TicTacToe\bin\Debug\net6.0\TicTacToe.deps.json
+C:\KPI\3 SEM\OOP\TicTacToe\bin\Debug\net6.0\TicTacToe.runtimeconfig.json
+C:\KPI\3 SEM\OOP\TicTacToe\bin\Debug\net6.0\TicTacToe.dll
+C:\KPI\3 SEM\OOP\TicTacToe\bin\Debug\net6.0\TicTacToe.pdb
+C:\KPI\3 SEM\OOP\TicTacToe\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.csproj.CopyComplete
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\TicTacToe.genruntimeconfig.cache
+C:\KPI\3 SEM\OOP\TicTacToe\obj\Debug\net6.0\ref\TicTacToe.dll

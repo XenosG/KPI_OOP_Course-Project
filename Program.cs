@@ -3,7 +3,7 @@ using System.Text;
 using System.Linq;
 using Newtonsoft.Json;
 
-// This enum represents the possible outcomes of a game
+// This enum represents the possible outcomes of a game.
 public enum Results
 {
     Win,
@@ -12,42 +12,42 @@ public enum Results
     Undetermined
 }
 
-// This class represents a basic game
-// Abstract modifier is not used, because serialization/deserialization is not possible with abstract classes
+// This class represents a basic game.
+// Abstract modifier is not used, because serialization/deserialization is not possible with abstract classes.
 public class Game
 {
-    // A static field to keep track of the index for each game
+    // A static field to keep track of the index for each game.
     public static uint constIndex { get; set; }
 
-    // Fields to store the first and second player's GameAccount objects
-    // Marked with the JsonIgnore attribute to prevent circular references during serialization/deserialization
+    // Fields to store the first and second player's GameAccount objects.
+    // Marked with the JsonIgnore attribute to prevent circular references during serialization/deserialization.
     [JsonIgnore]
     public GameAccount FirstPlayer { get; }
     [JsonIgnore]
     public GameAccount SecondPlayer { get; }
 
-    // Fields to store the names of the first and second players
-    // Marked with the JsonProperty attribute to enable serialization/deserialization
+    // Fields to store the names of the first and second players.
+    // Marked with the JsonProperty attribute to enable serialization/deserialization.
     [JsonProperty]
     public string FirstPlayerName { get; set; }
     [JsonProperty]
     public string SecondPlayerName { get; set; }
 
-    // Fields to store the rating cost and index of the game
-    // Marked with the JsonProperty attribute
+    // Fields to store the rating cost and index of the game.
+    // Marked with the JsonProperty attribute.
     [JsonProperty]
     public uint RatingCost { get; set; }
     [JsonProperty]
     public uint Index { get; set; }
 
-    // Fields to store the game's name and result 
-    // Marked with the JsonProperty attribute
+    // Fields to store the game's name and result .
+    // Marked with the JsonProperty attribute.
     [JsonProperty]
     public string GameName { get; set; }
     [JsonProperty]
     public Results Result { get; set; }
 
-    // Constructor to initialize the fields with the provided values
+    // Constructor to initialize the fields with the provided values.
     public Game(GameAccount firstPlayer, GameAccount secondPlayer, uint cost, string gameName)
     {
         FirstPlayer = firstPlayer;
@@ -60,18 +60,18 @@ public class Game
         Result = Results.Undetermined;
     }
 
-    // Default constructor to enable deserialization
+    // Default constructor to enable deserialization.
     public Game() { }
 }
 
-// This class represents a game account
+// This class represents a game account.
 public class GameAccount
 {
-    // Field to store the rating of the user
+    // Field to store the rating of the user.
     private uint rating = 5;
 
-    // Fields to store user's name, games history and games count
-    // Marked with the JsonProperty attribute
+    // Fields to store user's name, games history and games count.
+    // Marked with the JsonProperty attribute.
     [JsonProperty]
     public string UserName { get; set; }
     [JsonProperty]
@@ -79,8 +79,8 @@ public class GameAccount
     [JsonProperty]
     public uint GamesCount { get; set; }
 
-    // Get/set for the rating field including the check for it not to be negative
-    // Marked with the JsonProperty attribute
+    // Get/set for the rating field including the check for it not to be negative.
+    // Marked with the JsonProperty attribute.
     [JsonProperty]
     public uint CurrentRating
     {
@@ -92,7 +92,7 @@ public class GameAccount
         }
     }
 
-    // Constructor to initialize the fields with the provided values
+    // Constructor to initialize the fields with the provided values.
     public GameAccount(string name)
     {
         UserName = name;
@@ -100,13 +100,13 @@ public class GameAccount
         GameHistory = new List<Game>();
     }
 
-    // Default constructor to enable deserialization
+    // Default constructor to enable deserialization.
     public GameAccount() { }
 
-    // Method which is called whenever user completes a game
+    // Method which is called whenever user completes a game.
     public void CompleteGame(Game game)
     {
-        // If the user was in the game then record the game for him and his opponent
+        // If the user was in the game, record the game for him and his opponent.
         if (game.FirstPlayer.UserName.Equals(this.UserName))
         {
             RecordGame(game);
@@ -118,7 +118,7 @@ public class GameAccount
             game.FirstPlayer.RecordGame(game);
         }
 
-        // If the user was not in the game stop the app
+        // If the user was not in the game, stop the app.
         else
         {
             Console.WriteLine("Players cannot complete a game they did not participate in");
@@ -127,13 +127,13 @@ public class GameAccount
         }
     }
 
-    // Method to record games
+    // Method to record games.
     private void RecordGame(Game game)
     {
-        // If the game is not already recorded
+        // If the game is not already recorded,
         if (!GameHistory.Any(g => g.Index == game.Index))
         {
-            // Count the new rating for the user
+            // count the new rating for the user.
             if (game.FirstPlayer.UserName.Equals(this.UserName))
             {
                 if (game.Result == Results.Win)
@@ -149,24 +149,24 @@ public class GameAccount
                     CurrentRating += game.RatingCost;
             }
 
-            // Then add the game to the user's game history and +1 to the games count
+            // Then add the game to the user's game history and +1 to the games count.
             this.GameHistory.Add(game);
             GamesCount++;
         }
     }
 
-    // Method to write user's stats to the console
-    // That includes user's game history and rating
+    // Method to write user's stats to the console.
+    // That includes user's game history and rating.
     public void GetStats()
     {
         Console.WriteLine(GameHistoryToString(this.GameHistory));
         Console.WriteLine($"{UserName}'s rating: {CurrentRating}\n");
     }
 
-    // Method to convert game history list to a readable table view and return that as a string
+    // Method to convert game history list to a readable table view and return that as a string.
     public static string GameHistoryToString(List<Game> history)
     {
-        // Find the maximum lengths of the game, player, and result strings
+        // Find the maximum lengths of the game, player, and result strings.
         int maxGameNameLength = history.Max(game => game.GameName.Length);
         int maxFirstPlayerNameLength = history.Max(game => game.FirstPlayerName.Length);
         int maxSecondPlayerNameLength = history.Max(game => game.SecondPlayerName.Length);
@@ -174,10 +174,10 @@ public class GameAccount
         int maxIndexLength = history.Max(game => game.Index.ToString().Length);
         int maxWagerLength = history.Max(game => game.RatingCost.ToString().Length);
 
-        // Create a StringBuilder to hold the table view string
+        // Create a StringBuilder to hold the table view string.
         StringBuilder sb = new StringBuilder();
 
-        // Add the table headers
+        // Add the table headers.
         sb.Append("\nIndex".PadRight(maxIndexLength + 8) + "| Game Name".PadRight(maxGameNameLength + 10)
         + "| First Player".PadRight(maxFirstPlayerNameLength + 15) + "| Second Player".PadRight(maxSecondPlayerNameLength + 16)
         + "| Result".PadRight(8) + " | Wager\n");
@@ -186,26 +186,26 @@ public class GameAccount
         + "|".PadRight(maxFirstPlayerNameLength + 15, '-') + "|".PadRight(maxSecondPlayerNameLength + 16, '-')
         + "|".PadRight(8, '-') + "-|------\n");
 
-        // Iterate over the games in the list and add them to the StringBuilder
+        // Iterate over the games in the list and add them to the StringBuilder.
         foreach (Game game in history)
             sb.Append($"{game.Index.ToString().PadRight(maxIndexLength + 6)} | {game.GameName.PadRight(maxGameNameLength + 7)} | {game.FirstPlayerName.PadRight(maxFirstPlayerNameLength + 12)} | {game.SecondPlayerName.PadRight(maxSecondPlayerNameLength + 13)} | {game.Result.ToString().PadRight(6)} | {game.RatingCost}\n");
 
-        // Get the final string
+        // Get the final string.
         return sb.ToString();
     }
 }
 
-// This class that represents a game of Tic Tac Toe
-// Inherits from Game class
+// This class that represents a game of Tic Tac Toe.
+// Inherits from Game class.
 class TicTacToe : Game
 {
-    // This struct represents user's cursor (its position)
+    // This struct represents user's cursor (its position).
     private struct Cursor
     {
         private int yCord, xCord;
 
-        // Getters and setters for cursor coordinates
-        // Setters ensure that cursor doesnt go out of bounds
+        // Getters and setters for cursor coordinates.
+        // Setters ensure that cursor doesnt go out of bounds.
         public int YCord
         {
             get => yCord;
@@ -218,7 +218,7 @@ class TicTacToe : Game
             set => xCord = (value <= 2 && value >= 0) ? value : xCord;
         }
 
-        // Constructor is necessary for structs
+        // Constructor is necessary for structs.
         public Cursor()
         {
             yCord = 0;
@@ -226,8 +226,8 @@ class TicTacToe : Game
         }
     }
 
-    // This dictionary contains key-value pairs for cell types
-    // It is used to make the code more readable
+    // This dictionary contains key-value pairs for cell types.
+    // It is used to make the code more readable.
     private Dictionary<string, string> Cells = new Dictionary<string, string>(){
         {"PlayerO", "[O]"},
         {"PlayerX", "[X]"},
@@ -235,14 +235,14 @@ class TicTacToe : Game
         {"Selected", "[/]"}
     };
 
-    // This enum represents the possible player turn values
+    // This enum represents the possible player turn values.
     private enum PlayerTurn
     {
         FirstPlayer,
         SecondPlayer
     }
 
-    // Fields required for a tic-tac-toe game
+    // Fields required for a tic-tac-toe game.
     private Cursor cursor = new Cursor();
     private PlayerTurn currentPlayerTurn;
     private bool isWon;
@@ -250,12 +250,12 @@ class TicTacToe : Game
     private int xTemp;
     private int yTemp;
 
-    // Field which represents the shown game field
+    // Field which represents the shown game field.
     private string[,] field;
-    // Field which represents the actual game field
+    // Field which represents the actual game field.
     private string[,] staticField;
 
-    // Constructor to initialize the fields with the provided values
+    // Constructor to initialize the fields with the provided values.
     public TicTacToe(GameAccount firstPlayer, GameAccount secondPlayer, uint cost) : base(firstPlayer, secondPlayer, cost, "Tic Tac Toe")
     {
         cursor = new Cursor();
@@ -273,32 +273,32 @@ class TicTacToe : Game
         Play();
     }
 
-    // This method is called to play the game
+    // This method is called to play the game.
     public void Play()
     {
-        // The console color is changed to indicate that the game has started
+        // The console color is changed to indicate that the game has started.
         Console.ForegroundColor = ConsoleColor.Cyan;
 
         ConsoleKey key;
 
-        // Initial cursor placement
+        // Initial cursor placement.
         TextCursor();
 
-        // While cycle which ends only after the game is finished
+        // While cycle which ends only after the game is finished.
         while (true)
         {
-            // Console is cleared to stay readable and appealing
+            // Console is cleared to stay readable and appealing.
             Console.Clear();
 
-            // The game checks whether the conditions for victory have been met by any player
+            // The game checks whether the conditions for victory have been met by any player.
             WinConditions(Cells["PlayerX"]);
             WinConditions(Cells["PlayerO"]);
 
-            // The game field is printed to console
+            // The game field is printed to console.
             FieldPrint();
 
             // If the game is finished the result value is applied, the game is completed by player(s)
-            // and the cycle is stopped
+            // and the cycle is stopped.
             if (isWon || isDraw)
             {
                 this.Result = isDraw ? Results.Draw : currentPlayerTurn == PlayerTurn.FirstPlayer ? Results.Lose : Results.Win;
@@ -306,14 +306,14 @@ class TicTacToe : Game
                 break;
             }
 
-            // Read the key that user presses
+            // Read the key that user presses.
             key = Console.ReadKey(true).Key;
 
-            // Store last known cursor location
+            // Store last known cursor location.
             xTemp = cursor.XCord;
             yTemp = cursor.YCord;
 
-            // Depending on the user's input move the cursor or make a turn
+            // Depending on the user's input move the cursor or make a turn.
             switch (key)
             {
                 case ConsoleKey.DownArrow:
@@ -345,22 +345,22 @@ class TicTacToe : Game
                     break;
             }
 
-            // Cursor is moved to the next position if needed
+            // Cursor is moved to the next position if needed.
             TextCursor();
         }
 
         Console.WriteLine();
 
-        // The console is turned back white, because the game has ended
+        // The console is turned back white, because the game has ended.
         Console.ForegroundColor = ConsoleColor.White;
     }
 
-    // This method prints the game field to the console
+    // This method prints the game field to the console.
     private void FieldPrint()
     {
         Console.WriteLine();
 
-        // Iterate through the field and draw each cell
+        // Iterate through the field and draw each cell.
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -368,7 +368,7 @@ class TicTacToe : Game
                 if (staticField[i, j] != Cells["Empty"])
                     field[i, j] = staticField[i, j];
 
-                // If the game is not finished, draw the cursor
+                // If the game is not finished, draw the cursor.
                 if (!isWon && !isDraw)
                     field[cursor.YCord, cursor.XCord] = Cells["Selected"];
 
@@ -378,14 +378,14 @@ class TicTacToe : Game
             Console.WriteLine("\n");
         }
 
-        // Depending on the game status, write whose turn it is, who won or is it a draw
+        // Depending on the game status, write whose turn it is, who won or is it a draw.
         Console.Write(isDraw ? "It's a draw!" : !isWon ? currentPlayerTurn == PlayerTurn.FirstPlayer ? $"It's {FirstPlayer.UserName}'s turn now." : $"It's {SecondPlayer.UserName}'s turn now." : currentPlayerTurn == PlayerTurn.FirstPlayer ? $"{SecondPlayer.UserName} won!" : $"{FirstPlayer.UserName} won!");
     }
 
-    // This method checks if the game was finished
+    // This method checks if the game was finished.
     private void WinConditions(string player)
     {
-        // Iterate through the game field and check whether the victory conditions have been met or not
+        // Iterate through the game field and check whether the victory conditions have been met or not.
         for (int i = 0; i < 3; i++)
         {
             // vertical
@@ -414,29 +414,29 @@ class TicTacToe : Game
 
     }
 
-    // This method draws the cursor
+    // This method draws the cursor.
     private void TextCursor()
     {
-        // Set the current cursor position cell to "Selected"
+        // Set the current cursor position cell to "Selected".
         field[cursor.YCord, cursor.XCord] = Cells["Selected"];
 
-        // Check if cursor has moved from its previous position
+        // Check if cursor has moved from its previous position.
         if (xTemp != cursor.XCord || yTemp != cursor.YCord)
-            // If it has, set the previous position cell to "Empty"
+            // If it has, set the previous position cell to "Empty".
             field[yTemp, xTemp] = Cells["Empty"];
     }
 
-    // This method acts as a player's turn
+    // This method acts as a player's turn.
     private void PlayerSetter()
     {
-        // If the cell the cursor is currently in is empty
+        // If the cell the cursor is currently in is empty,
         if (staticField[cursor.YCord, cursor.XCord] == Cells["Empty"])
         {
-            // Set the cell to the symbol of the current player
+            // set the cell to the symbol of the current player
             field[cursor.YCord, cursor.XCord] = currentPlayerTurn == PlayerTurn.FirstPlayer ? Cells["PlayerX"] : Cells["PlayerO"];
             staticField[cursor.YCord, cursor.XCord] = currentPlayerTurn == PlayerTurn.FirstPlayer ? Cells["PlayerX"] : Cells["PlayerO"];
 
-            // Change the current player
+            // and change the current player.
             currentPlayerTurn = currentPlayerTurn == PlayerTurn.FirstPlayer ? PlayerTurn.SecondPlayer : PlayerTurn.FirstPlayer;
         }
     }
@@ -448,41 +448,41 @@ class Program
 
     static void Main(string[] args)
     {
-        // Lists of game accounts and game history
-        // Imported from json files
+        // Lists of game accounts and game history.
+        // Imported from json files.
         List<GameAccount> gameAccounts;
         List<Game> gameHistory;
         gameAccounts = GetListFromJson<GameAccount>("accounts.json");
         gameHistory = GetListFromJson<Game>("gameHistory.json");
 
-        // The index is set to continue the previous counting
+        // The index is set to continue the previous counting.
         Game.constIndex = gameHistory.Count == 0 ? 0 : (uint)gameHistory.Count;
 
 
-        // Endless cycle which implements a console-based user interface
+        // Endless cycle which implements a console-based user interface.
         while (true)
         {
             Console.Clear();
 
-            // Display menu options
+            // Display menu options.
             Console.WriteLine("Menu Options:");
             Console.WriteLine("1. Play Tic Tac Toe");
             Console.WriteLine("2. View Game History");
             Console.WriteLine("3. View Player's ratings");
             Console.WriteLine("4. Quit");
 
-            // Get user input
+            // Get user input.
             Console.Write("Enter an option: ");
             string input = Console.ReadLine();
 
-            // Parse user input and execute corresponding action
+            // Parse user input and execute corresponding action.
             switch (input)
             {
                 case "1":
-                    // Endless while cycles are needed to prevent the user from making wrong inputs
+                    // Endless while cycles are needed to prevent the user from making wrong inputs.
                     Console.Clear();
 
-                    // Temporary variable to store user's input
+                    // Temporary variable to store user's input.
                     string temp;
 
                     Console.Write("First player: ");
@@ -492,8 +492,8 @@ class Program
                         if (!temp.Equals("")) break;
                     }
 
-                    // If the game account with said name exists, use it
-                    // If not, create a new one and add it to the list
+                    // If the game account with said name exists, use it.
+                    // If not, create a new one and add it to the list.
                     GameAccount first = gameAccounts.FirstOrDefault(g => g.UserName.Equals(temp));
                     if (first == null)
                     {
@@ -508,8 +508,8 @@ class Program
                         if (!temp.Equals("") && !temp.Equals(first.UserName)) break;
                     }
 
-                    // If the game account with said name exists, use it
-                    // If not, create a new one and add it to the list
+                    // If the game account with said name exists, use it.
+                    // If not, create a new one and add it to the list.
                     GameAccount second = gameAccounts.FirstOrDefault(g => g.UserName.Equals(temp));
                     if (second == null)
                     {
@@ -524,12 +524,12 @@ class Program
                         if (!temp.Equals("") && Convert.ToInt32(temp) >= 0) break;
                     }
 
-                    // Create a new instance of a tic-tac-toe game and start it
+                    // Create a new instance of a tic-tac-toe game and start it.
                     TicTacToe game = new TicTacToe(first, second, Convert.ToUInt32(temp));
                     game.Play();
 
                     // When the game is finished, add it to the game history
-                    // And store new values for the game history and game accounts in json files
+                    // and store new values for the game history and game accounts in json files.
                     gameHistory = GetAllUniqueGames(gameAccounts);
                     SaveListToJson<Game>(gameHistory, "gameHistory.json");
                     SaveListToJson<GameAccount>(gameAccounts, "accounts.json");
@@ -538,22 +538,22 @@ class Program
                     break;
 
                 case "2":
-                    // If there are no games recorded, do nothing
+                    // If there are no games recorded, do nothing.
                     if (gameHistory.Count == 0) break;
                     Console.Clear();
 
-                    // View Game History
+                    // View Game History.
                     Console.WriteLine(GameAccount.GameHistoryToString(gameHistory));
 
                     Console.ReadLine();
                     break;
 
                 case "3":
-                    // If there are no game accounts, do nothing
+                    // If there are no game accounts, do nothing.
                     if (gameAccounts.Count == 0) break;
                     Console.Clear();
 
-                    // View player's ratings
+                    // View player's ratings.
                     foreach (GameAccount g in gameAccounts)
                         Console.WriteLine($"{g.UserName}'s rating: {g.CurrentRating}");
 
@@ -561,7 +561,7 @@ class Program
                     break;
 
                 case "4":
-                    // Quit
+                    // Quit.
                     Environment.Exit(0);
                     break;
 
@@ -573,35 +573,35 @@ class Program
 
     }
 
-    // This method is used to get the list of all unique games
+    // This method is used to get the list of all unique games.
     public static List<Game> GetAllUniqueGames(List<GameAccount> gameAccounts)
     {
-        // Create a list to hold all of the games
+        // Create a list to hold all of the games.
         List<Game> allGames = new List<Game>();
 
-        // Iterate over the game accounts and add their games to the list
+        // Iterate over the game accounts and add their games to the list.
         foreach (GameAccount gameAccount in gameAccounts)
             foreach (Game game in gameAccount.GameHistory)
-                // Only add the game if it doesn't already exist in the list
+                // Only add the game if it doesn't already exist in the list.
                 if (!allGames.Any(g => g.Index == game.Index))
                     allGames.Add(game);
 
-        // Return the list of all unique games
+        // Return the list of all unique games.
         return allGames;
     }
 
-    // This method is used to put a list into a json file
+    // This method is used to put a list into a json file.
     public static void SaveListToJson<T>(List<T> list, string filePath)
     {
         // Serialize the list to a JSON string, avoiding infinite cycles
-        // And write the JSON string to the specified file
+        // and write the JSON string to the specified file.
         File.WriteAllText(filePath, JsonConvert.SerializeObject(list, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
     }
 
-    // This method is used to get a list from a json file
+    // This method is used to get a list from a json file.
     public static List<T> GetListFromJson<T>(string filePath)
     {
-        // Deserialize the list from a JSON file and return it
+        // Deserialize the list from a JSON file and return it.
         return JsonConvert.DeserializeObject<List<T>>(File.ReadAllText(filePath));
     }
 }

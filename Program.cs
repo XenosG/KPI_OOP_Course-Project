@@ -599,9 +599,7 @@ class Program
     }
 
     // This method is used to get a list from a json file.
-    public static List<T> GetListFromJson<T>(string filePath)
-    {
-        // Deserialize the list from a JSON file and return it.
-        return JsonConvert.DeserializeObject<List<T>>(File.ReadAllText(filePath));
-    }
+    // Deserializes the list from a JSON file and returns it.
+    public static List<T> GetListFromJson<T>(string filePath) => JsonConvert.DeserializeObject<List<T>>(File.ReadAllText(filePath));
+
 }

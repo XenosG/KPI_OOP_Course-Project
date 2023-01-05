@@ -159,7 +159,7 @@ public class GameAccount
     // That includes user's game history and rating.
     public void GetStats()
     {
-        Console.WriteLine(UserGameHistoryToString());
+        if (this.GameHistory != null) Console.WriteLine(UserGameHistoryToString());
         Console.WriteLine($"{UserName}'s rating: {CurrentRating}\n");
     }
 
@@ -561,8 +561,8 @@ class Program
                     Console.Clear();
 
                     // View player's ratings.
-                    foreach (GameAccount g in gameAccounts)
-                        Console.WriteLine($"{g.UserName}'s rating: {g.CurrentRating}");
+                    foreach (GameAccount g in from acc in gameAccounts orderby acc.CurrentRating descending select acc)
+                        Console.WriteLine($"{g.UserName.PadRight(gameAccounts.Max(acc => acc.UserName.Length))}'s rating: {g.CurrentRating}");
 
                     Console.ReadLine();
                     break;

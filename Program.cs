@@ -159,7 +159,7 @@ public class GameAccount
     // That includes user's game history and rating.
     public void GetStats()
     {
-        if (this.GameHistory != null) Console.WriteLine(UserGameHistoryToString());
+        if (this.GameHistory.Count != 0) Console.WriteLine(UserGameHistoryToString());
         Console.WriteLine($"{UserName}'s rating: {CurrentRating}\n");
     }
 

@@ -82,7 +82,7 @@ public class GameAccount
     // Get/set for the rating field including the check for it not to be negative.
     // Marked with the JsonProperty attribute.
     [JsonProperty]
-    public uint CurrentRating
+    public virtual uint CurrentRating
     {
         get => rating;
         set
@@ -200,6 +200,40 @@ public class GameAccount
         // Get the final string.
         return sb.ToString();
     }
+}
+
+// Premium version of a game account (less points on loses).
+public class PremiumGameAccount : GameAccount
+{
+    // Field which represents the multiplier by which the negative rating is divided (2 by default).
+    private uint multiplier;
+
+    // Rating setter is changed to work with multiplier.
+    public override uint CurrentRating
+    {
+        get => base.CurrentRating;
+        set => base.CurrentRating = base.CurrentRating > value ? ((base.CurrentRating - value) / multiplier) + value : value;
+    }
+
+    // Constructor to initialize the fields with the provided values.
+    public PremiumGameAccount(string name, uint multiplier = 2) : base(name) { this.multiplier = multiplier; }
+}
+
+// PremiumPlus version of a game account (more points on wins, less points on loses).
+public class PremiumPlusGameAccount : GameAccount
+{
+    // Field which represents the multiplier by which the rating value is increased and the negative value is divided (2 by default).
+    private uint multiplier;
+
+    // Rating setter is changed to work with multiplier.
+    public override uint CurrentRating
+    {
+        get => base.CurrentRating;
+        set => base.CurrentRating = base.CurrentRating > value ? ((base.CurrentRating - value) / multiplier) + value : ((value - base.CurrentRating) * multiplier) + base.CurrentRating;
+    }
+
+    // Constructor to initialize the fields with the provided values.
+    public PremiumPlusGameAccount(string name, uint multiplier = 2) : base(name) { this.multiplier = multiplier; }
 }
 
 // This class that represents a game of Tic Tac Toe.

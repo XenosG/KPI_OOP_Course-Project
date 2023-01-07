@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text;
 using System.Linq;
-using Newtonsoft.Json;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 // This enum represents the possible outcomes of a game.
 public enum Results
@@ -14,45 +15,40 @@ public enum Results
 
 // This class represents a basic game.
 // Abstract modifier is not used, because serialization/deserialization is not possible with abstract classes.
+[Serializable]
 public class Game
 {
     // A static field to keep track of the index for each game.
     public static uint constIndex { get; set; }
 
+    [NonSerialized]
+    private GameAccount _firstPlayer;
+    [NonSerialized]
+    private GameAccount _secondPlayer;
+
+
     // Fields to store the first and second player's GameAccount objects.
-    // Marked with the JsonIgnore attribute to prevent circular references during serialization/deserialization.
-    [JsonIgnore]
-    public GameAccount FirstPlayer { get; }
-    [JsonIgnore]
-    public GameAccount SecondPlayer { get; }
+    public GameAccount FirstPlayer { get => _firstPlayer; }
+    public GameAccount SecondPlayer { get => _secondPlayer; }
 
     // Fields to store the names of the first and second players.
-    // Marked with the JsonProperty attribute to enable serialization/deserialization.
-    [JsonProperty]
-    public string FirstPlayerName { get; set; }
-    [JsonProperty]
-    public string SecondPlayerName { get; set; }
+    public string FirstPlayerName { get;  }
+    public string SecondPlayerName { get; }
 
     // Fields to store the rating cost and index of the game.
-    // Marked with the JsonProperty attribute.
-    [JsonProperty]
-    public uint RatingCost { get; set; }
-    [JsonProperty]
-    public uint Index { get; set; }
+    public uint RatingCost { get; }
+    public uint Index { get; }
 
     // Fields to store the game's name and result .
-    // Marked with the JsonProperty attribute.
-    [JsonProperty]
-    public string GameName { get; set; }
-    [JsonProperty]
+    public string GameName { get; protected set; }
     public Results Result { get; set; }
 
     // Constructor to initialize the fields with the provided values.
-    public Game(GameAccount firstPlayer, GameAccount secondPlayer, uint cost, string gameName)
+    protected Game(GameAccount firstPlayer, GameAccount secondPlayer, uint cost, string gameName)
     {
-        FirstPlayer = firstPlayer;
+        _firstPlayer = firstPlayer;
         FirstPlayerName = firstPlayer.UserName;
-        SecondPlayer = secondPlayer;
+        _secondPlayer = secondPlayer;
         SecondPlayerName = secondPlayer.UserName;
         RatingCost = cost;
         Index = constIndex++;
@@ -60,11 +56,10 @@ public class Game
         Result = Results.Undetermined;
     }
 
-    // Default constructor to enable deserialization.
-    public Game() { }
 }
 
 // This class represents a game account.
+[Serializable]
 public class GameAccount
 {
     // Field to store the rating of the user.
@@ -72,20 +67,16 @@ public class GameAccount
 
     // Fields to store user's name, games history and games count.
     // Marked with the JsonProperty attribute.
-    [JsonProperty]
-    public string UserName { get; set; }
-    [JsonProperty]
-    public List<Game> GameHistory { get; set; }
-    [JsonProperty]
-    public uint GamesCount { get; set; }
+    public string UserName { get; }
+    public List<Game> GameHistory { get; }
+    public uint GamesCount { get; private set;}
 
     // Get/set for the rating field including the check for it not to be negative.
     // Marked with the JsonProperty attribute.
-    [JsonProperty]
     public virtual uint CurrentRating
     {
         get => rating;
-        set
+        protected set
         {
             int temp = (int)value;
             rating = temp < 0 ? 0 : value;
@@ -164,9 +155,10 @@ public class GameAccount
     }
 
     // Method to make results in table represent themselves relatively to the user.
-    private string UserGameHistoryToString(){
+    private string UserGameHistoryToString()
+    {
         List<Game> temp = new List<Game>(this.GameHistory);
-        foreach(Game game in temp) game.Result = game.Result == Results.Draw || this.UserName.Equals(game.FirstPlayerName) ? game.Result : game.Result == Results.Win ? Results.Lose : Results.Win;
+        foreach (Game game in temp) game.Result = game.Result == Results.Draw || this.UserName.Equals(game.FirstPlayerName) ? game.Result : game.Result == Results.Win ? Results.Lose : Results.Win;
         return GameHistoryToString(temp);
     }
 
@@ -212,7 +204,7 @@ public class PremiumGameAccount : GameAccount
     public override uint CurrentRating
     {
         get => base.CurrentRating;
-        set => base.CurrentRating = base.CurrentRating > value ? ((base.CurrentRating - value) / multiplier) + value : value;
+        protected set => base.CurrentRating = base.CurrentRating > value ? ((base.CurrentRating - value) / multiplier) + value : value;
     }
 
     // Constructor to initialize the fields with the provided values.
@@ -229,7 +221,7 @@ public class PremiumPlusGameAccount : GameAccount
     public override uint CurrentRating
     {
         get => base.CurrentRating;
-        set => base.CurrentRating = base.CurrentRating > value ? ((base.CurrentRating - value) / multiplier) + value : ((value - base.CurrentRating) * multiplier) + base.CurrentRating;
+        protected set => base.CurrentRating = base.CurrentRating > value ? ((base.CurrentRating - value) / multiplier) + value : ((value - base.CurrentRating) * multiplier) + base.CurrentRating;
     }
 
     // Constructor to initialize the fields with the provided values.
@@ -238,9 +230,11 @@ public class PremiumPlusGameAccount : GameAccount
 
 // This class that represents a game of Tic Tac Toe.
 // Inherits from Game class.
+[Serializable]
 class TicTacToe : Game
 {
     // This struct represents user's cursor (its position).
+    [Serializable]
     private struct Cursor
     {
         private int yCord, xCord;
@@ -493,8 +487,8 @@ class Program
         // Imported from json files.
         List<GameAccount> gameAccounts;
         List<Game> gameHistory;
-        gameAccounts = GetListFromJson<GameAccount>("accounts.json");
-        gameHistory = GetListFromJson<Game>("gameHistory.json");
+        gameAccounts = DeserializeListFromBinFile<GameAccount>("accounts.bin");
+        gameHistory = DeserializeListFromBinFile<Game>("gameHistory.bin");
 
         // The index is set to continue the previous counting.
         Game.constIndex = gameHistory.Count == 0 ? 0 : (uint)gameHistory.Count;
@@ -572,8 +566,8 @@ class Program
                     // When the game is finished, add it to the game history
                     // and store new values for the game history and game accounts in json files.
                     gameHistory = GetAllUniqueGames(gameAccounts);
-                    SaveListToJson<Game>(gameHistory, "gameHistory.json");
-                    SaveListToJson<GameAccount>(gameAccounts, "accounts.json");
+                    SerializeListToBinFile<Game>("gameHistory.bin", gameHistory);
+                    SerializeListToBinFile<GameAccount>("accounts.bin", gameAccounts);
 
                     Console.ReadLine();
                     break;
@@ -627,20 +621,41 @@ class Program
                 if (!allGames.Any(g => g.Index == game.Index))
                     allGames.Add(game);
 
+        // Reorder list by index
+        var temp = from i in allGames orderby i.Index ascending select i;
+
         // Return the list of all unique games.
-        return allGames;
+        return temp.ToList();
     }
 
-    // This method is used to put a list into a json file.
-    public static void SaveListToJson<T>(List<T> list, string filePath)
+    // This method is used to serialize a list to a bin file
+    public static void SerializeListToBinFile<T>(string filePath, List<T> list)
     {
-        // Serialize the list to a JSON string, avoiding infinite cycles
-        // and write the JSON string to the specified file.
-        File.WriteAllText(filePath, JsonConvert.SerializeObject(list, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+        // Check if the file already exists. If it does, delete it.
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+
+        // Create a new file and serialize the list to it
+        using (FileStream stream = File.OpenWrite(filePath))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(stream, list);
+        }
     }
 
-    // This method is used to get a list from a json file.
-    // Deserializes the list from a JSON file and returns it.
-    public static List<T> GetListFromJson<T>(string filePath) => JsonConvert.DeserializeObject<List<T>>(File.ReadAllText(filePath));
+    // This method is used to deserialize a list from a bin file
+    public static List<T> DeserializeListFromBinFile<T>(string filePath)
+    {
+        // Check if the file exists. If it doesn't, throw an error.
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException($"Unable to find file at path: {filePath}");
+
+        // Open the file and deserialize the list from it
+        using (FileStream stream = File.OpenRead(filePath))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            return (List<T>)formatter.Deserialize(stream);
+        }
+    }
 
 }

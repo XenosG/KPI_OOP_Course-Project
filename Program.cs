@@ -16,7 +16,7 @@ public enum Results
 // This class represents a basic game.
 // Abstract modifier is not used, because serialization/deserialization is not possible with abstract classes.
 [Serializable]
-public class Game
+public abstract class Game
 {
     // A static field to keep track of the index for each game.
     public static uint constIndex { get; set; }

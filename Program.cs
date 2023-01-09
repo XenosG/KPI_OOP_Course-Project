@@ -16,7 +16,7 @@ public enum Results
 // This class represents a basic game.
 // Abstract modifier is not used, because serialization/deserialization is not possible with abstract classes.
 [Serializable]
-public abstract class Game
+abstract class Game
 {
     // A static field to keep track of the index for each game.
     public static uint constIndex { get; set; }
@@ -60,7 +60,7 @@ public abstract class Game
 
 // This class represents a game account.
 [Serializable]
-public class GameAccount
+class GameAccount
 {
     // Field to store the rating of the user.
     private uint rating = 5;
@@ -79,7 +79,7 @@ public class GameAccount
         protected set
         {
             int temp = (int)value;
-            rating = temp < 0 ? 0 : value;
+            rating = temp < 1 ? 1 : value;
         }
     }
 
@@ -208,7 +208,7 @@ public class GameAccount
 
 // Premium version of a game account (less points on loses).
 [Serializable]
-public class PremiumGameAccount : GameAccount
+class PremiumGameAccount : GameAccount
 {
     // Field which represents the multiplier by which the negative rating is divided (2 by default).
     private uint multiplier;
@@ -226,7 +226,7 @@ public class PremiumGameAccount : GameAccount
 
 // PremiumPlus version of a game account (more points on wins, less points on loses).
 [Serializable]
-public class PremiumPlusGameAccount : GameAccount
+class PremiumPlusGameAccount : GameAccount
 {
     // Field which represents the multiplier by which the rating value is increased and the negative value is divided (2 by default).
     private uint multiplier;
@@ -491,25 +491,76 @@ class TicTacToe : Game
     }
 }
 
+// Class for serialization/deserialization.
+class BinIO
+{
+    // This method is used to serialize a list to a bin file.
+    public static void SerializeListToBinFile<T>(string filePath, List<T> list)
+    {
+        // Check if the file already exists. If it does, delete it.
+        if (File.Exists(filePath))
+            File.Delete(filePath);
 
-class Program
+        // Create a new file and serialize the list to it.
+        using (FileStream stream = File.OpenWrite(filePath))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(stream, list);
+        }
+    }
+
+    // This method is used to deserialize a list from a bin file.
+    public static List<T> DeserializeListFromBinFile<T>(string filePath)
+    {
+        // Check if the file exists. If it doesn't, throw an error.
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException($"Unable to find file at path: {filePath}");
+
+        // Open the file and deserialize the list from it.
+        using (FileStream stream = File.OpenRead(filePath))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            return (List<T>)formatter.Deserialize(stream);
+        }
+    }
+
+    // This method is used to get the list of all unique games.
+    public static List<Game> GetAllUniqueGames(List<GameAccount> gameAccounts)
+    {
+        // Create a list to hold all of the games.
+        List<Game> allGames = new List<Game>();
+
+        // Iterate over the game accounts and add their games to the list.
+        foreach (GameAccount gameAccount in gameAccounts)
+            foreach (Game game in gameAccount.GameHistory)
+                // Only add the game if it doesn't already exist in the list.
+                if (!allGames.Any(g => g.Index == game.Index))
+                    allGames.Add(game);
+
+        // Reorder list by index.
+        var temp = from i in allGames orderby i.Index ascending select i;
+
+        // Return the list of all unique games.
+        return temp.ToList();
+    }
+}
+
+// User interface.
+class Menu
 {
 
-    static void Main(string[] args)
+    public List<GameAccount> gameAccounts { get; protected set; }
+    public List<Game> gameHistory { get; protected set; }
+
+
+    public Menu(List<GameAccount> gameAccounts, List<Game> gameHistory)
     {
-        // Lists of game accounts and game history.
-        // Imported from json files.
-        List<GameAccount> gameAccounts;
-        List<Game> gameHistory;
-        gameAccounts = DeserializeListFromBinFile<GameAccount>("accounts.bin");
-        gameHistory = DeserializeListFromBinFile<Game>("gameHistory.bin");
-        // gameAccounts = new List<GameAccount>();
-        // gameHistory = new List<Game>();
+        this.gameAccounts = gameAccounts;
+        this.gameHistory = gameHistory;
+    }
 
-        // The index is set to continue the previous counting.
-        Game.constIndex = gameHistory.Count == 0 ? 0 : (uint)gameHistory.Count;
-
-
+    public void Activate()
+    {
         // Endless cycle which implements a console-based user interface.
         while (true)
         {
@@ -531,120 +582,19 @@ class Program
             switch (input)
             {
                 case "1":
-                    // Endless while cycles are needed to prevent the user from making wrong inputs.
-                    Console.Clear();
-
-                    // Temporary variable to store user's input.
-                    string temp;
-                    int temp2;
-
-                    Console.Write("First player: ");
-                    while (true)
-                    {
-                        temp = Console.ReadLine();
-                        if (!temp.Equals("")) break;
-                    }
-
-                    // If the game account with said name exists, use it.
-                    // If not, create a new one and add it to the list.
-                    GameAccount first = gameAccounts.FirstOrDefault(g => g.UserName.Equals(temp));
-                    if (first == null)
-                    {
-                        Console.Write("First player account type (1-3):\n[1]Basic\n[2]Premium\n[3]Premium+\n");
-                        while (true)
-                        {
-                            temp2 = Convert.ToInt32(Console.ReadLine());
-                            if (temp2 >= 1 && temp2 <= 3) break;
-                        }
-                        first = temp2 == 1 ? new GameAccount(temp) : temp2 == 2 ? new PremiumGameAccount(temp) : new PremiumPlusGameAccount(temp);
-                        gameAccounts.Add(first);
-                    }
-
-                    Console.Write("Second player: ");
-                    while (true)
-                    {
-                        temp = Console.ReadLine();
-                        if (!temp.Equals("") && !temp.Equals(first.UserName)) break;
-                    }
-
-                    // If the game account with said name exists, use it.
-                    // If not, create a new one and add it to the list.
-                    GameAccount second = gameAccounts.FirstOrDefault(g => g.UserName.Equals(temp));
-                    if (second == null)
-                    {
-                        Console.Write("Second player account type (1-3):\n[1]Basic\n[2]Premium\n[3]Premium+\n");
-                        while (true)
-                        {
-                            temp2 = Convert.ToInt32(Console.ReadLine());
-                            if (temp2 >= 1 && temp2 <= 3) break;
-                        }
-                        second = temp2 == 1 ? new GameAccount(temp) : temp2 == 2 ? new PremiumGameAccount(temp) : new PremiumPlusGameAccount(temp);
-                        gameAccounts.Add(second);
-                    }
-
-                    Console.Write("Enter rating wager (>=0 && <=player's rating): ");
-                    while (true)
-                    {
-                        temp = Console.ReadLine();
-                        if (!temp.Equals("") && Convert.ToInt32(temp) >= 0 && Convert.ToInt32(temp) <= first.CurrentRating && Convert.ToInt32(temp) <= second.CurrentRating) break;
-                    }
-
-                    // Create a new instance of a tic-tac-toe game and start it.
-                    TicTacToe game = new TicTacToe(first, second, Convert.ToUInt32(temp));
-                    game.Play();
-
-                    // When the game is finished, add it to the game history
-                    // and store new values for the game history and game accounts in json files.
-                    gameHistory = GetAllUniqueGames(gameAccounts);
-                    SerializeListToBinFile<Game>("gameHistory.bin", gameHistory);
-                    SerializeListToBinFile<GameAccount>("accounts.bin", gameAccounts);
-
-                    Console.ReadLine();
+                    this.playGame();
                     break;
 
                 case "2":
-                    // If there are no games recorded, do nothing.
-                    if (gameHistory.Count == 0) break;
-                    Console.Clear();
-
-                    // View Game History.
-                    Console.WriteLine(GameAccount.GameHistoryToString(gameHistory));
-
-                    Console.ReadLine();
+                    this.viewHistory();
                     break;
 
                 case "3":
-                    // If there are no game accounts, do nothing.
-                    if (gameAccounts.Count == 0) break;
-                    Console.Clear();
-
-                    // View player's ratings.
-                    foreach (GameAccount g in from acc in gameAccounts orderby acc.CurrentRating descending select acc)
-                        Console.WriteLine((g is PremiumPlusGameAccount ? "[Premium+]" : g is PremiumGameAccount ? "[Premium ]" : "[Basic   ]") + $" {g.UserName.PadRight(gameAccounts.Max(acc => acc.UserName.Length))}'s  rating: {g.CurrentRating}");
-
-                    Console.ReadLine();
+                    this.viewStats();
                     break;
 
                 case "4":
-                    Console.Write("Are you sure you want to clear data? (Y/N)\n");
-                    while (true)
-                    {
-                        input = Console.ReadLine();
-                        if (input == "Y" || input == "y" || input == "N" || input == "n") break;
-                    }
-                    switch (input)
-                    {
-                        case "Y":
-                        case "y":
-                            gameAccounts = new List<GameAccount>();
-                            gameHistory = new List<Game>();
-                            SerializeListToBinFile<Game>("gameHistory.bin", gameHistory);
-                            SerializeListToBinFile<GameAccount>("accounts.bin", gameAccounts);
-                            break;
-                        case "N":
-                        case "n":
-                            break;
-                    }
+                    this.clearData();
                     break;
 
                 case "5":
@@ -657,57 +607,148 @@ class Program
                     break;
             }
         }
-
     }
 
-    // This method is used to get the list of all unique games.
-    public static List<Game> GetAllUniqueGames(List<GameAccount> gameAccounts)
+    private void playGame()
     {
-        // Create a list to hold all of the games.
-        List<Game> allGames = new List<Game>();
+        // Endless while cycles are needed to prevent the user from making wrong inputs.
+        Console.Clear();
 
-        // Iterate over the game accounts and add their games to the list.
-        foreach (GameAccount gameAccount in gameAccounts)
-            foreach (Game game in gameAccount.GameHistory)
-                // Only add the game if it doesn't already exist in the list.
-                if (!allGames.Any(g => g.Index == game.Index))
-                    allGames.Add(game);
+        // Temporary variable to store user's input.
+        string temp;
+        int temp2;
 
-        // Reorder list by index
-        var temp = from i in allGames orderby i.Index ascending select i;
-
-        // Return the list of all unique games.
-        return temp.ToList();
-    }
-
-    // This method is used to serialize a list to a bin file
-    public static void SerializeListToBinFile<T>(string filePath, List<T> list)
-    {
-        // Check if the file already exists. If it does, delete it.
-        if (File.Exists(filePath))
-            File.Delete(filePath);
-
-        // Create a new file and serialize the list to it
-        using (FileStream stream = File.OpenWrite(filePath))
+        Console.Write("First player: ");
+        while (true)
         {
-            BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(stream, list);
+            temp = Console.ReadLine();
+            if (!temp.Equals("")) break;
+        }
+
+        // If the game account with said name exists, use it.
+        // If not, create a new one and add it to the list.
+        GameAccount first = gameAccounts.FirstOrDefault(g => g.UserName.Equals(temp));
+        if (first == null)
+        {
+            Console.Write("First player account type (1-3):\n[1]Basic\n[2]Premium\n[3]Premium+\n");
+            while (true)
+            {
+                temp2 = Convert.ToInt32(Console.ReadLine());
+                if (temp2 >= 1 && temp2 <= 3) break;
+            }
+            first = temp2 == 1 ? new GameAccount(temp) : temp2 == 2 ? new PremiumGameAccount(temp) : new PremiumPlusGameAccount(temp);
+            gameAccounts.Add(first);
+        }
+
+        Console.Write("Second player: ");
+        while (true)
+        {
+            temp = Console.ReadLine();
+            if (!temp.Equals("") && !temp.Equals(first.UserName)) break;
+        }
+
+        // If the game account with said name exists, use it.
+        // If not, create a new one and add it to the list.
+        GameAccount second = gameAccounts.FirstOrDefault(g => g.UserName.Equals(temp));
+        if (second == null)
+        {
+            Console.Write("Second player account type (1-3):\n[1]Basic\n[2]Premium\n[3]Premium+\n");
+            while (true)
+            {
+                temp2 = Convert.ToInt32(Console.ReadLine());
+                if (temp2 >= 1 && temp2 <= 3) break;
+            }
+            second = temp2 == 1 ? new GameAccount(temp) : temp2 == 2 ? new PremiumGameAccount(temp) : new PremiumPlusGameAccount(temp);
+            gameAccounts.Add(second);
+        }
+
+        Console.Write("Enter rating wager (>=0 && <=player's rating): ");
+        while (true)
+        {
+            temp = Console.ReadLine();
+            if (!temp.Equals("") && Convert.ToInt32(temp) >= 0 && Convert.ToInt32(temp) <= first.CurrentRating && Convert.ToInt32(temp) <= second.CurrentRating) break;
+        }
+
+        // Create a new instance of a tic-tac-toe game and start it.
+        TicTacToe game = new TicTacToe(first, second, Convert.ToUInt32(temp));
+        game.Play();
+
+        // When the game is finished, add it to the game history
+        // and store new values for the game history and game accounts in json files.
+        gameHistory = BinIO.GetAllUniqueGames(gameAccounts);
+        BinIO.SerializeListToBinFile<Game>("gameHistory.bin", gameHistory);
+        BinIO.SerializeListToBinFile<GameAccount>("accounts.bin", gameAccounts);
+
+        Console.ReadLine();
+    }
+
+    private void viewHistory()
+    {
+        // If there are no games recorded, do nothing.
+        if (gameHistory.Count == 0) return;
+        Console.Clear();
+
+        // View Game History.
+        Console.WriteLine(GameAccount.GameHistoryToString(gameHistory));
+
+        Console.ReadLine();
+    }
+
+    private void viewStats()
+    {
+        // If there are no game accounts, do nothing.
+        if (gameAccounts.Count == 0) return;
+        Console.Clear();
+
+        // View player's ratings.
+        foreach (GameAccount g in from acc in gameAccounts orderby acc.CurrentRating descending select acc)
+            Console.WriteLine((g is PremiumPlusGameAccount ? "[Premium+]" : g is PremiumGameAccount ? "[Premium ]" : "[Basic   ]") + $" {g.UserName.PadRight(gameAccounts.Max(acc => acc.UserName.Length))}'s  rating: {g.CurrentRating}");
+
+        Console.ReadLine();
+    }
+
+    private void clearData()
+    {
+        string input;
+        Console.Write("Are you sure you want to clear data? (Y/N)\n");
+        while (true)
+        {
+            input = Console.ReadLine();
+            if (input == "Y" || input == "y" || input == "N" || input == "n") break;
+        }
+        switch (input)
+        {
+            case "Y":
+            case "y":
+                gameAccounts = new List<GameAccount>();
+                gameHistory = new List<Game>();
+                BinIO.SerializeListToBinFile<Game>("gameHistory.bin", gameHistory);
+                BinIO.SerializeListToBinFile<GameAccount>("accounts.bin", gameAccounts);
+                break;
+            case "N":
+            case "n":
+                break;
         }
     }
+}
 
-    // This method is used to deserialize a list from a bin file
-    public static List<T> DeserializeListFromBinFile<T>(string filePath)
+class Program
+{
+
+    static void Main(string[] args)
     {
-        // Check if the file exists. If it doesn't, throw an error.
-        if (!File.Exists(filePath))
-            throw new FileNotFoundException($"Unable to find file at path: {filePath}");
+        // Lists of game accounts and game history.
+        // Imported from json files.
+        List<GameAccount> gameAccounts = BinIO.DeserializeListFromBinFile<GameAccount>("accounts.bin");
+        List<Game> gameHistory = BinIO.DeserializeListFromBinFile<Game>("gameHistory.bin");
 
-        // Open the file and deserialize the list from it
-        using (FileStream stream = File.OpenRead(filePath))
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            return (List<T>)formatter.Deserialize(stream);
-        }
+        // The index is set to continue the previous counting.
+        Game.constIndex = gameHistory.Count == 0 ? 0 : (uint)gameHistory.Count;
+
+        // Initializing and activating game menu.
+        Menu m = new Menu(gameAccounts, gameHistory);
+        m.Activate();
+
     }
 
 }

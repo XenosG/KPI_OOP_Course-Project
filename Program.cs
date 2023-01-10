@@ -150,16 +150,8 @@ class GameAccount
     // That includes user's game history and rating.
     public void GetStats()
     {
-        if (this.GameHistory.Count != 0) Console.WriteLine(UserGameHistoryToString());
+        if (this.GameHistory.Count != 0) Console.WriteLine(GameHistoryToString(this.GameHistory));
         Console.WriteLine($"{UserName}'s rating: {CurrentRating}\n");
-    }
-
-    // Method to make results in table represent themselves relatively to the user.
-    private string UserGameHistoryToString()
-    {
-        List<Game> temp = new List<Game>(this.GameHistory);
-        foreach (Game game in temp) game.Result = game.Result == Results.Draw || this.UserName.Equals(game.FirstPlayerName) ? game.Result : game.Result == Results.Win ? Results.Lose : Results.Win;
-        return GameHistoryToString(temp);
     }
 
     // Method to convert game history list to a readable table view and return that as a string.

@@ -5,7 +5,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
 // This enum represents the possible outcomes of a game.
-public enum Results
+enum Results
 {
     Win,
     Lose,
@@ -18,7 +18,7 @@ public enum Results
 [Serializable]
 abstract class Game
 {
-    // A static field to keep track of the index for each game.
+    // A static property to keep track of the index for each game.
     public static uint constIndex { get; set; }
 
     [NonSerialized]
@@ -27,19 +27,19 @@ abstract class Game
     private GameAccount _secondPlayer;
 
 
-    // Fields to store the first and second player's GameAccount objects.
+    // Properties to store the first and second player's GameAccount objects.
     public GameAccount FirstPlayer { get => _firstPlayer; }
     public GameAccount SecondPlayer { get => _secondPlayer; }
 
-    // Fields to store the names of the first and second players.
+    // Properties to store the names of the first and second players.
     public string FirstPlayerName { get; }
     public string SecondPlayerName { get; }
 
-    // Fields to store the rating cost and index of the game.
+    // Properties to store the rating cost and index of the game.
     public uint RatingCost { get; }
     public uint Index { get; }
 
-    // Fields to store the game's name and result .
+    // Properties to store the game's name and result .
     public string GameName { get; protected set; }
     public Results Result { get; set; }
 
@@ -65,13 +65,13 @@ class GameAccount
     // Field to store the rating of the user.
     private uint rating = 5;
 
-    // Fields to store user's name, games history and games count.
+    // Properties to store user's name, games history and games count.
     // Marked with the JsonProperty attribute.
     public string UserName { get; }
     public List<Game> GameHistory { get; }
     public uint GamesCount { get; private set; }
 
-    // Get/set for the rating field including the check for it not to be negative.
+    // Property for the rating field including the check for it not to be negative.
     // Marked with the JsonProperty attribute.
     public virtual uint CurrentRating
     {
@@ -100,13 +100,13 @@ class GameAccount
         // If the user was in the game, record the game for him and his opponent.
         if (game.FirstPlayer.UserName.Equals(this.UserName))
         {
-            RecordGame(game);
-            game.SecondPlayer.RecordGame(game);
+            recordGame(game);
+            game.SecondPlayer.recordGame(game);
         }
         else if (game.SecondPlayer.UserName.Equals(this.UserName))
         {
-            RecordGame(game);
-            game.FirstPlayer.RecordGame(game);
+            recordGame(game);
+            game.FirstPlayer.recordGame(game);
         }
 
         // If the user was not in the game, stop the app.
@@ -119,7 +119,7 @@ class GameAccount
     }
 
     // Method to record games.
-    private void RecordGame(Game game)
+    private void recordGame(Game game)
     {
         // If the game is not already recorded,
         if (!GameHistory.Any(g => g.Index == game.Index))
@@ -294,7 +294,7 @@ class TicTacToe : Game
     // Field which represents the shown game field.
     private string[,] field;
     // Field which represents the actual game field.
-    private string[,] staticField;
+    private string[,] actualField;
 
     // Constructor to initialize the fields with the provided values.
     public TicTacToe(GameAccount firstPlayer, GameAccount secondPlayer, uint cost) : base(firstPlayer, secondPlayer, cost, "Tic Tac Toe")
@@ -302,13 +302,13 @@ class TicTacToe : Game
         cursor = new Cursor();
         currentPlayerTurn = PlayerTurn.FirstPlayer;
         field = new string[3, 3];
-        staticField = new string[3, 3];
+        actualField = new string[3, 3];
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
             {
                 field[i, j] = Cells["Empty"];
-                staticField[i, j] = Cells["Empty"];
+                actualField[i, j] = Cells["Empty"];
             }
         }
         Play();
@@ -323,7 +323,7 @@ class TicTacToe : Game
         ConsoleKey key;
 
         // Initial cursor placement.
-        TextCursor();
+        drawCursor();
 
         // While cycle which ends only after the game is finished.
         while (true)
@@ -332,11 +332,11 @@ class TicTacToe : Game
             Console.Clear();
 
             // The game checks whether the conditions for victory have been met by any player.
-            WinConditions(Cells["PlayerX"]);
-            WinConditions(Cells["PlayerO"]);
+            winConditions(Cells["PlayerX"]);
+            winConditions(Cells["PlayerO"]);
 
             // The game field is printed to console.
-            FieldPrint();
+            fieldPrint();
 
             // If the game is finished the result value is applied, the game is completed by player(s)
             // and the cycle is stopped.
@@ -379,7 +379,7 @@ class TicTacToe : Game
 
                 case ConsoleKey.Spacebar:
                 case ConsoleKey.Enter:
-                    PlayerSetter();
+                    turnMaker();
                     break;
 
                 default:
@@ -387,7 +387,7 @@ class TicTacToe : Game
             }
 
             // Cursor is moved to the next position if needed.
-            TextCursor();
+            drawCursor();
         }
 
         Console.WriteLine();
@@ -397,7 +397,7 @@ class TicTacToe : Game
     }
 
     // This method prints the game field to the console.
-    private void FieldPrint()
+    private void fieldPrint()
     {
         Console.WriteLine();
 
@@ -406,8 +406,8 @@ class TicTacToe : Game
         {
             for (int j = 0; j < 3; j++)
             {
-                if (staticField[i, j] != Cells["Empty"])
-                    field[i, j] = staticField[i, j];
+                if (actualField[i, j] != Cells["Empty"])
+                    field[i, j] = actualField[i, j];
 
                 // If the game is not finished, draw the cursor.
                 if (!isWon && !isDraw)
@@ -424,31 +424,31 @@ class TicTacToe : Game
     }
 
     // This method checks if the game was finished.
-    private void WinConditions(string player)
+    private void winConditions(string player)
     {
         // Iterate through the game field and check whether the victory conditions have been met or not.
         for (int i = 0; i < 3; i++)
         {
             // vertical
-            if (staticField[0, i] == player && staticField[1, i] == player && staticField[2, i] == player)
+            if (actualField[0, i] == player && actualField[1, i] == player && actualField[2, i] == player)
                 isWon = true;
 
             // horizontal
-            if (staticField[i, 0] == player && staticField[i, 1] == player && staticField[i, 2] == player)
+            if (actualField[i, 0] == player && actualField[i, 1] == player && actualField[i, 2] == player)
                 isWon = true;
 
         }
 
         // diagonals
-        if (staticField[0, 0] == player && staticField[1, 1] == player && staticField[2, 2] == player)
+        if (actualField[0, 0] == player && actualField[1, 1] == player && actualField[2, 2] == player)
             isWon = true;
 
-        if (staticField[2, 0] == player && staticField[1, 1] == player && staticField[0, 2] == player)
+        if (actualField[2, 0] == player && actualField[1, 1] == player && actualField[0, 2] == player)
             isWon = true;
 
 
         int temp = 0;
-        foreach (string cell in staticField)
+        foreach (string cell in actualField)
             if (!cell.Equals(Cells["Empty"])) temp++;
 
         if (temp == 9) isDraw = true;
@@ -456,7 +456,7 @@ class TicTacToe : Game
     }
 
     // This method draws the cursor.
-    private void TextCursor()
+    private void drawCursor()
     {
         // Set the current cursor position cell to "Selected".
         field[cursor.YCord, cursor.XCord] = Cells["Selected"];
@@ -468,14 +468,14 @@ class TicTacToe : Game
     }
 
     // This method acts as a player's turn.
-    private void PlayerSetter()
+    private void turnMaker()
     {
         // If the cell the cursor is currently in is empty,
-        if (staticField[cursor.YCord, cursor.XCord] == Cells["Empty"])
+        if (actualField[cursor.YCord, cursor.XCord] == Cells["Empty"])
         {
             // set the cell to the symbol of the current player
             field[cursor.YCord, cursor.XCord] = currentPlayerTurn == PlayerTurn.FirstPlayer ? Cells["PlayerX"] : Cells["PlayerO"];
-            staticField[cursor.YCord, cursor.XCord] = currentPlayerTurn == PlayerTurn.FirstPlayer ? Cells["PlayerX"] : Cells["PlayerO"];
+            actualField[cursor.YCord, cursor.XCord] = currentPlayerTurn == PlayerTurn.FirstPlayer ? Cells["PlayerX"] : Cells["PlayerO"];
 
             // and change the current player.
             currentPlayerTurn = currentPlayerTurn == PlayerTurn.FirstPlayer ? PlayerTurn.SecondPlayer : PlayerTurn.FirstPlayer;
@@ -757,8 +757,7 @@ class Program
 
     static void Main(string[] args)
     {
-
-
+        // Try-finally in case an erroe occures while the console color is changed.
         try
         {
             // Lists of game accounts and game history.

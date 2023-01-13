@@ -559,16 +559,19 @@ class Menu
             Console.Clear();
 
             // Display menu options.
-            Console.WriteLine("Menu Options:");
-            Console.WriteLine("1. Play Tic Tac Toe");
-            Console.WriteLine("2. View Game History");
-            Console.WriteLine("3. View Player's stats");
-            Console.WriteLine("4. Clear data");
-            Console.WriteLine("5. Quit");
+            Console.WriteLine("[======Menu Options=====]\n");
+            Console.WriteLine(" [1] Play Tic Tac Toe");
+            Console.WriteLine(" [2] View Game History");
+            Console.WriteLine(" [3] View Player's stats");
+            Console.WriteLine(" [4] Clear data");
+            Console.WriteLine(" [5] Quit");
+            Console.WriteLine("\n[=======================]");
 
             // Get user input.
-            Console.Write("Enter an option: ");
+            Console.Write("\nEnter an option: ");
+            Console.ForegroundColor = ConsoleColor.Green;
             string input = Console.ReadLine();
+            Console.ForegroundColor = ConsoleColor.White;
 
             // Parse user input and execute corresponding action.
             switch (input)
@@ -595,7 +598,10 @@ class Menu
                     break;
 
                 default:
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Invalid input. Please try again.");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.ReadKey();
                     break;
             }
         }
@@ -606,16 +612,20 @@ class Menu
         // Endless while cycles are needed to prevent the user from making wrong inputs.
         Console.Clear();
 
-        // Temporary variable to store user's input.
+        // Temporary variables to store user's input.
         string temp;
         int temp2;
 
         Console.Write("First player: ");
         while (true)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             temp = Console.ReadLine();
             if (!temp.Equals("")) break;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Invalid input. Please try again.");
         }
+        Console.ForegroundColor = ConsoleColor.White;
 
         // If the game account with said name exists, use it.
         // If not, create a new one and add it to the list.
@@ -625,9 +635,13 @@ class Menu
             Console.Write("First player account type (1-3):\n[1]Basic\n[2]Premium\n[3]Premium+\n");
             while (true)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 temp2 = Convert.ToInt32(Console.ReadLine());
                 if (temp2 >= 1 && temp2 <= 3) break;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid input. Please try again.");
             }
+            Console.ForegroundColor = ConsoleColor.White;
             first = temp2 == 1 ? new GameAccount(temp) : temp2 == 2 ? new PremiumGameAccount(temp) : new PremiumPlusGameAccount(temp);
             gameAccounts.Add(first);
         }
@@ -635,9 +649,13 @@ class Menu
         Console.Write("Second player: ");
         while (true)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             temp = Console.ReadLine();
             if (!temp.Equals("") && !temp.Equals(first.UserName)) break;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Invalid input. Please try again.");
         }
+        Console.ForegroundColor = ConsoleColor.White;
 
         // If the game account with said name exists, use it.
         // If not, create a new one and add it to the list.
@@ -647,9 +665,13 @@ class Menu
             Console.Write("Second player account type (1-3):\n[1]Basic\n[2]Premium\n[3]Premium+\n");
             while (true)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 temp2 = Convert.ToInt32(Console.ReadLine());
                 if (temp2 >= 1 && temp2 <= 3) break;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid input. Please try again.");
             }
+            Console.ForegroundColor = ConsoleColor.White;
             second = temp2 == 1 ? new GameAccount(temp) : temp2 == 2 ? new PremiumGameAccount(temp) : new PremiumPlusGameAccount(temp);
             gameAccounts.Add(second);
         }
@@ -657,9 +679,13 @@ class Menu
         Console.Write("Enter rating wager (>=0 && <=player's rating): ");
         while (true)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             temp = Console.ReadLine();
             if (!temp.Equals("") && Convert.ToInt32(temp) >= 0 && Convert.ToInt32(temp) <= first.CurrentRating && Convert.ToInt32(temp) <= second.CurrentRating) break;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Invalid input. Please try again.");
         }
+        Console.ForegroundColor = ConsoleColor.White;
 
         // Create a new instance of a tic-tac-toe game and start it.
         TicTacToe game = new TicTacToe(first, second, Convert.ToUInt32(temp));
@@ -703,11 +729,13 @@ class Menu
     {
         string input;
         Console.Write("Are you sure you want to clear data? (Y/N)\n");
+        Console.ForegroundColor = ConsoleColor.Green;
         while (true)
         {
             input = Console.ReadLine();
             if (input == "Y" || input == "y" || input == "N" || input == "n") break;
         }
+        Console.ForegroundColor = ConsoleColor.White;
         switch (input)
         {
             case "Y":
@@ -729,17 +757,26 @@ class Program
 
     static void Main(string[] args)
     {
-        // Lists of game accounts and game history.
-        // Imported from json files.
-        List<GameAccount> gameAccounts = BinIO.DeserializeListFromBinFile<GameAccount>("accounts.bin");
-        List<Game> gameHistory = BinIO.DeserializeListFromBinFile<Game>("gameHistory.bin");
 
-        // The index is set to continue the previous counting.
-        Game.constIndex = gameHistory.Count == 0 ? 0 : (uint)gameHistory.Count;
 
-        // Initializing and activating game menu.
-        Menu m = new Menu(gameAccounts, gameHistory);
-        m.Activate();
+        try
+        {
+            // Lists of game accounts and game history.
+            // Imported from json files.
+            List<GameAccount> gameAccounts = BinIO.DeserializeListFromBinFile<GameAccount>("accounts.bin");
+            List<Game> gameHistory = BinIO.DeserializeListFromBinFile<Game>("gameHistory.bin");
+
+            // The index is set to continue the previous counting.
+            Game.constIndex = gameHistory.Count == 0 ? 0 : (uint)gameHistory.Count;
+
+            // Initializing and activating game menu.
+            Menu m = new Menu(gameAccounts, gameHistory);
+            m.Activate();
+        }
+        finally
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+        }
 
     }
 
